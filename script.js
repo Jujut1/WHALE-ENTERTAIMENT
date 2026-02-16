@@ -1,40 +1,631 @@
-// ============================================
-// BLUEWHALE AUTH SYSTEM - MAIN JAVASCRIPT
-// ============================================
-
-// GLOBAL VARIABLES
-let isVerified = false;
-let currentUser = null;
-let mathAnswer = 0;
+/* ============================================
+   BLUEWHALE AUTH SYSTEM - MASTER JAVASCRIPT
+   Version: 3.0 PRO MAX (FIXED & OPTIMIZED)
+   Author: JejeDev
+   Last Updated: 2026
+   ============================================ */
 
 // ============================================
-// INITIALIZATION
+// GLOBAL VARIABLES & CONFIGURATION
+// ============================================
+const CONFIG = {
+    SESSION_TIMEOUT: 30 * 60 * 1000, // 30 menit dalam milliseconds
+    DEFAULT_USERS: [
+        {
+            id: '1',
+            firstName: 'Jeje',
+            lastName: 'Dev',
+            username: 'jejedev',
+            email: 'jeje@bluewhale.com',
+            password: btoa('admin123') + '_hash',
+            joinDate: '2024-01-15',
+            lastLogin: null,
+            status: 'active',
+            loginHistory: []
+        },
+        {
+            id: '2',
+            firstName: 'Demo',
+            lastName: 'User',
+            username: 'demouser',
+            email: 'demo@bluewhale.com',
+            password: btoa('demo123') + '_hash',
+            joinDate: '2024-02-20',
+            lastLogin: null,
+            status: 'active',
+            loginHistory: []
+        },
+        {
+            id: '3',
+            firstName: 'Test',
+            lastName: 'Account',
+            username: 'testacc',
+            email: 'test@bluewhale.com',
+            password: btoa('test123') + '_hash',
+            joinDate: '2024-03-01',
+            lastLogin: null,
+            status: 'active',
+            loginHistory: []
+        }
+    ]
+};
+
+// State management
+let AppState = {
+    isVerified: false,
+    currentUser: null,
+    mathAnswer: 0,
+    isDragging: false,
+    dragStartX: 0,
+    users: [],
+    session: null
+};
+
+// ============================================
+// INITIALIZATION - RUNS ON PAGE LOAD
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔥 BlueWhale System Activated!');
-    
-    // Check current page
-    const currentPage = window.location.pathname.split('/').pop();
+    console.log('🔥 BlueWhale System Activated - Version 3.0');
     
     // Initialize database
     initializeDatabase();
     
-    // Setup berdasarkan halaman
-    if (currentPage === 'login.html') {
-        setupLoginPage();
-    } else if (currentPage === 'register.html') {
-        setupRegisterPage();
-    } else if (currentPage === 'dashboard.html') {
-        setupDashboardPage();
-    } else if (currentPage === 'index.html' || currentPage === '') {
-        setupLandingPage();
-    }
+    // Load users ke memory
+    loadUsersFromStorage();
     
-    // Setup global features
-    setupGlobalFeatures();
+    // Check session
+    checkSession();
+    
+    // Setup berdasarkan halaman
+    const path = window.location.pathname;
+    setupPageBasedOnURL(path);
+    
+    // Global event listeners
+    setupGlobalEventListeners();
+    
+    // Welcome message
+    setTimeout(() => {
+        if (!window.location.pathname.includes('dashboard.html')) {
+            showBubble('🚀 Welcome to BlueWhale Auth System!', 'info', 'info-circle');
+        }
+    }, 1000);
 });
 
 // ============================================
+// DATABASE FUNCTIONS
+// ============================================
+function initializeDatabase() {
+    if (!localStorage.getItem('bluewhale_users')) {
+        localStorage.setItem('bluewhale_users', JSON.stringify(CONFIG.DEFAULT_USERS));
+        console.log('✅ Database initialized with default users');
+    }
+}
+
+function loadUsersFromStorage() {
+    try {
+        AppState.users = JSON.parse(localStorage.getItem('bluewhale_users')) || [];
+    } catch (e) {
+        console.error('Error loading users:', e);
+        AppState.users = [];
+    }
+}
+
+function saveUsersToStorage() {
+    try {
+        localStorage.setItem('bluewhale_users', JSON.stringify(AppState.users));
+    } catch (e) {
+        console.error('Error saving users:', e);
+        showBubble('❌ Failed to save data', 'error', 'exclamation-triangle');
+    }
+}
+
+// Password hashing (simple - for demo only)
+function hashPassword(password) {
+    return btoa(password) + '_hash';
+}
+
+function verifyPassword(inputPassword, storedPassword) {
+    return hashPassword(inputPassword) === storedPassword;
+}
+
+// ============================================
+// SESSION MANAGEMENT
+// ============================================
+function checkSession() {
+    const sessionStr = sessionStorage.getItem('bluewhale_session');
+    if (!sessionStr) return false;
+    
+    try {
+        const session = JSON.parse(sessionStr);
+        const loginTime = new Date(session.loginTime).getTime();
+        const now = new Date().getTime();
+        
+        // Check if session expired
+        if (now - loginTime > CONFIG.SESSION_TIMEOUT) {
+            sessionStorage.removeItem('bluewhale_session');
+            showBubble('⏰ Session expired. Please login again.', 'warning', 'clock');
+            return false;
+        }
+        
+        // Find user
+        AppState.currentUser = AppState.users.find(u => u.id === session.userId);
+        AppState.session = session;
+        
+        return !!AppState.currentUser;
+    } catch (e) {
+        console.error('Session error:', e);
+        sessionStorage.removeItem('bluewhale_session');
+        return false;
+    }
+}
+
+function createSession(user) {
+    const session = {
+        userId: user.id,
+        loginTime: new Date().toISOString()
+    };
+    sessionStorage.setItem('bluewhale_session', JSON.stringify(session));
+    AppState.session = session;
+    AppState.currentUser = user;
+}
+
+function destroySession() {
+    sessionStorage.removeItem('bluewhale_session');
+    AppState.session = null;
+    AppState.currentUser = null;
+}
+
+// ============================================
+// PAGE SETUP BASED ON URL
+// ============================================
+function setupPageBasedOnURL(path) {
+    if (path.includes('login.html')) {
+        setupLoginPage();
+    } else if (path.includes('register.html')) {
+        setupRegisterPage();
+    } else if (path.includes('dashboard.html')) {
+        setupDashboardPage();
+    } else if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
+        setupLandingPage();
+    }
+}
+
+// ============================================
+// LOGIN PAGE SETUP
+// ============================================
+function setupLoginPage() {
+    console.log('🔐 Setting up login page...');
+    
+    // Reset verification state
+    AppState.isVerified = false;
+    
+    // Setup slider verification
+    setupSliderVerification();
+    
+    // Setup form submit
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Setup toggle password
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            togglePasswordVisibility(this);
+        });
+    });
+    
+    // Setup demo users click
+    const demoUsersBtn = document.querySelector('.demo-users');
+    if (demoUsersBtn) {
+        demoUsersBtn.addEventListener('click', showDemoUsers);
+    }
+    
+    // Auto-fill demo (for testing) - hapus di production
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'true') {
+        document.getElementById('loginIdentifier').value = 'demo@bluewhale.com';
+        document.getElementById('loginPassword').value = 'demo123';
+    }
+}
+
+// Slider Verification
+function setupSliderVerification() {
+    const slider = document.querySelector('.slider-verify');
+    const thumb = document.querySelector('.slider-thumb');
+    const verifyStatus = document.getElementById('verifyStatus');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    if (!slider || !thumb) return;
+    
+    // Mouse events
+    thumb.addEventListener('mousedown', startDrag);
+    thumb.addEventListener('touchstart', startDrag, { passive: false });
+    
+    function startDrag(e) {
+        e.preventDefault();
+        AppState.isDragging = true;
+        AppState.dragStartX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+        thumb.style.transition = 'none';
+        
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+    
+    function onDrag(e) {
+        if (!AppState.isDragging) return;
+        e.preventDefault();
+        
+        const currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+        const diff = currentX - AppState.dragStartX;
+        const maxDiff = slider.offsetWidth - thumb.offsetWidth - 20;
+        
+        let newLeft = Math.min(Math.max(diff, 0), maxDiff);
+        thumb.style.left = newLeft + 'px';
+        
+        // Check if reached the end
+        if (newLeft >= maxDiff) {
+            // Verification success
+            AppState.isVerified = true;
+            if (verifyStatus) {
+                verifyStatus.innerHTML = '<i class="fas fa-check-circle" style="color:#10B981"></i> Verified';
+                verifyStatus.style.color = '#10B981';
+            }
+            if (loginBtn) loginBtn.disabled = false;
+            thumb.innerHTML = '<i class="fas fa-check"></i>';
+            
+            showBubble('✅ Verification successful!', 'success', 'check-circle');
+            stopDrag();
+        }
+    }
+    
+    function stopDrag() {
+        if (AppState.isDragging) {
+            AppState.isDragging = false;
+            thumb.style.transition = 'left 0.3s';
+            
+            if (!AppState.isVerified) {
+                thumb.style.left = '0';
+                thumb.innerHTML = '<i class="fas fa-arrow-right"></i>';
+            }
+            
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+    }
+}
+
+// Login Handler
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const loginBtn = e.target.querySelector('button');
+    const originalText = loginBtn.innerHTML;
+    
+    // Validasi
+    if (!identifier || !password) {
+        showBubble('⚠️ Please fill in all fields', 'warning', 'exclamation-triangle');
+        return;
+    }
+    
+    if (!AppState.isVerified) {
+        showBubble('⚠️ Please complete verification first!', 'warning', 'shield');
+        return;
+    }
+    
+    // Disable button
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    
+    // Simulate network delay (300ms for fast response)
+    setTimeout(() => {
+        // Find user
+        const user = AppState.users.find(u => 
+            (u.username === identifier || u.email === identifier) && 
+            u.status === 'active'
+        );
+        
+        if (!user) {
+            showBubble('❌ User not found!', 'error', 'user-slash');
+            resetButton(loginBtn, originalText);
+            return;
+        }
+        
+        if (!verifyPassword(password, user.password)) {
+            showBubble('❌ Wrong password!', 'error', 'lock');
+            resetButton(loginBtn, originalText);
+            return;
+        }
+        
+        // Update last login
+        user.lastLogin = new Date().toISOString();
+        user.loginHistory = user.loginHistory || [];
+        user.loginHistory.push({
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language
+        });
+        
+        // Save to storage
+        saveUsersToStorage();
+        
+        // Create session
+        createSession(user);
+        
+        // Show success
+        showBubble(`🎉 Welcome back, ${user.firstName}!`, 'success', 'party');
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 800);
+        
+    }, 300); // Fast 300ms response
+}
+
+// ============================================
+// REGISTER PAGE SETUP
+// ============================================
+function setupRegisterPage() {
+    console.log('📝 Setting up register page...');
+    
+    // Reset verification
+    AppState.isVerified = false;
+    
+    // Setup math verification
+    setupMathVerification();
+    
+    // Setup form submit
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    // Setup password strength checker
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', checkPasswordStrength);
+        passwordInput.addEventListener('input', checkPasswordMatch);
+    }
+    
+    // Setup confirm password checker
+    const confirmInput = document.getElementById('confirmPassword');
+    if (confirmInput) {
+        confirmInput.addEventListener('input', checkPasswordMatch);
+    }
+    
+    // Setup username availability
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+        usernameInput.addEventListener('input', debounce(checkUsernameAvailability, 400));
+    }
+    
+    // Setup toggle password
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            togglePasswordVisibility(this);
+        });
+    });
+    
+    // Setup terms checkbox
+    const termsCheck = document.getElementById('termsCheck');
+    if (termsCheck) {
+        termsCheck.addEventListener('change', checkRegisterButton);
+    }
+}
+
+// Math Verification
+function setupMathVerification() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    AppState.mathAnswer = num1 + num2;
+    
+    const questionEl = document.getElementById('mathQuestion');
+    if (questionEl) {
+        questionEl.textContent = `${num1} + ${num2} = ?`;
+    }
+    
+    const verifyBtn = document.querySelector('.verify-btn');
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', checkMathVerify);
+    }
+    
+    const mathInput = document.getElementById('mathAnswer');
+    if (mathInput) {
+        mathInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkMathVerify();
+            }
+        });
+    }
+}
+
+function checkMathVerify() {
+    const answer = parseInt(document.getElementById('mathAnswer').value);
+    const verifyStatus = document.getElementById('verifyStatus');
+    const registerBtn = document.getElementById('registerBtn');
+    
+    if (isNaN(answer)) {
+        showBubble('⚠️ Please enter an answer', 'warning', 'exclamation-triangle');
+        return;
+    }
+    
+    if (answer === AppState.mathAnswer) {
+        AppState.isVerified = true;
+        if (verifyStatus) {
+            verifyStatus.innerHTML = '<i class="fas fa-check-circle" style="color:#10B981"></i> Verified';
+        }
+        checkRegisterButton();
+        showBubble('✅ Math verification passed!', 'success', 'check');
+    } else {
+        showBubble('❌ Wrong answer! Try again', 'error', 'times-circle');
+        if (verifyStatus) {
+            verifyStatus.innerHTML = '<i class="fas fa-times-circle" style="color:#EF4444"></i> Wrong answer';
+        }
+    }
+}
+
+// Password Strength Checker
+function checkPasswordStrength() {
+    const password = document.getElementById('password').value;
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    
+    if (!strengthBar) return;
+    
+    let strength = 0;
+    let feedback = [];
+    
+    // Length check
+    if (password.length >= 8) {
+        strength++;
+        feedback.push('✓ Good length');
+    } else {
+        feedback.push('✗ Min 8 characters');
+    }
+    
+    if (password.length >= 12) strength++;
+    
+    // Uppercase check
+    if (/[A-Z]/.test(password)) {
+        strength++;
+        feedback.push('✓ Has uppercase');
+    } else {
+        feedback.push('✗ Add uppercase');
+    }
+    
+    // Number check
+    if (/[0-9]/.test(password)) {
+        strength++;
+        feedback.push('✓ Has number');
+    } else {
+        feedback.push('✗ Add number');
+    }
+    
+    // Special character check
+    if (/[^A-Za-z0-9]/.test(password)) {
+        strength++;
+        feedback.push('✓ Has special char');
+    } else {
+        feedback.push('✗ Add special char');
+    }
+    
+    // Calculate percentage
+    const percentage = (strength / 5) * 100;
+    strengthBar.style.width = percentage + '%';
+    
+    // Change color and text
+    let strengthLevel = '';
+    if (percentage < 40) {
+        strengthBar.style.background = '#EF4444';
+        strengthLevel = 'Weak';
+    } else if (percentage < 70) {
+        strengthBar.style.background = '#F59E0B';
+        strengthLevel = 'Medium';
+    } else {
+        strengthBar.style.background = '#10B981';
+        strengthLevel = 'Strong';
+    }
+    
+    if (strengthText) {
+        strengthText.textContent = strengthLevel;
+        strengthText.className = 'strength-text strength-' + strengthLevel.toLowerCase();
+    }
+    
+    // Update register button state
+    checkRegisterButton();
+}
+
+// Check password match
+function checkPasswordMatch() {
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    const confirmWrapper = document.getElementById('confirmPassword')?.closest('.input-wrapper');
+    
+    if (confirm.length > 0 && confirmWrapper) {
+        if (password === confirm) {
+            confirmWrapper.style.borderColor = '#10B981';
+            confirmWrapper.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)';
+        } else {
+            confirmWrapper.style.borderColor = '#EF4444';
+            confirmWrapper.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+        }
+    }
+    
+    checkRegisterButton();
+}
+
+// Check username availability
+function checkUsernameAvailability() {
+    const username = document.getElementById('username').value;
+    const hint = document.getElementById('usernameHint');
+    
+    if (!hint) return false;
+    
+    if (username.length < 3) {
+        hint.innerHTML = '❌ Too short (min 3 chars)';
+        hint.style.color = '#EF4444';
+        checkRegisterButton();
+        return false;
+    }
+    
+    // Check if username exists
+    const exists = AppState.users.some(u => u.username === username);
+    
+    if (exists) {
+        hint.innerHTML = '❌ Username taken';
+        hint.style.color = '#EF4444';
+        checkRegisterButton();
+        return false;
+    } else {
+        hint.innerHTML = '✅ Available';
+        hint.style.color = '#10B981';
+        checkRegisterButton();
+        return true;
+    }
+}
+
+// Check register button state
+function checkRegisterButton() {
+    const registerBtn = document.getElementById('registerBtn');
+    const termsCheck = document.getElementById('termsCheck');
+    
+    if (!registerBtn || !termsCheck) return;
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    const email = document.getElementById('email').value;
+    
+    const usernameAvailable = username.length >= 3 && !AppState.users.some(u => u.username === username);
+    const passwordMatch = password === confirm && password.length >= 6;
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const termsAccepted = termsCheck.checked;
+    
+    if (AppState.isVerified && termsAccepted && usernameAvailable && passwordMatch && emailValid) {
+        registerBtn.disabled = false;
+    } else {
+        registerBtn.disabled = true;
+    }
+}
+
+// Register Handler
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const termsCheck = docume// ============================================
 // DATABASE INITIALIZATION
 // ============================================
 function initializeDatabase() {
