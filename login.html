@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueWhale • Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <!-- Bubble Notifications Container -->
+    <div id="bubbleContainer" class="bubble-container"></div>
+
+    <div class="auth-wrapper">
+        <!-- Decorative Elements -->
+        <div class="floating-bubble bubble-1"></div>
+        <div class="floating-bubble bubble-2"></div>
+        <div class="floating-bubble bubble-3"></div>
+
+        <!-- Main Auth Card -->
+        <div class="auth-card animate-pop-in">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-water"></i>
+                </div>
+                <h2>Welcome Back! 👋</h2>
+                <p>Please login to your account</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email or Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="text" id="loginIdentifier" placeholder="Enter email or username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="Enter password" required>
+                        <i class="fas fa-eye toggle-password" onclick="togglePassword('loginPassword', this)"></i>
+                    </div>
+                </div>
+
+                <!-- Custom Verification (Bukan Cloudflare) -->
+                <div class="verification-box">
+                    <div class="verification-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Security Verification</span>
+                    </div>
+                    <div class="verification-content">
+                        <div class="slider-verify" id="sliderVerify">
+                            <div class="slider-track">
+                                <div class="slider-thumb" id="sliderThumb">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <span class="slider-text">Slide to verify</span>
+                            </div>
+                        </div>
+                        <div class="verification-status" id="verifyStatus">
+                            <i class="fas fa-times-circle"></i> Not verified
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="auth-btn" id="loginBtn" disabled>
+                    <span>Login</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="register.html">Sign up</a></p>
+            </div>
+
+            <!-- Demo Users Bubble -->
+            <div class="demo-users" onclick="showDemoUsers()">
+                <i class="fas fa-info-circle"></i>
+                <span>Demo users</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="notifications.js"></script>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueWhale • Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="bubbleContainer" class="bubble-container"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar sama seperti sebelumnya, tapi ditambah user info dinamis -->
+        <aside class="sidebar" id="sidebar">
+            <!-- ... sidebar content sama ... -->
+            <div class="sidebar-footer">
+                <div class="user-profile" id="userProfile">
+                    <!-- Akan diisi oleh JavaScript -->
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="welcome-banner">
+                <div class="welcome-text">
+                    <h1>Welcome back, <span id="displayName"></span>! 👋</h1>
+                    <p>Your personal dashboard</p>
+                </div>
+                <div class="user-stats-bubbles">
+                    <div class="stat-bubble-small bubble-blue">
+                        <i class="fas fa-calendar"></i>
+                        <span>Joined: <span id="joinDate"></span></span>
+                    </div>
+                    <div class="stat-bubble-small bubble-green">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Verified</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Stats Card -->
+            <div class="database-stats-card">
+                <h3><i class="fas fa-database"></i> Database Statistics</h3>
+                <div class="db-stats-grid">
+                    <div class="db-stat">
+                        <span class="db-label">Total Users</span>
+                        <span class="db-value" id="totalUsers">0</span>
+                    </div>
+                    <div class="db-stat">
+                        <span class="db-label">Online Now</span>
+                        <span class="db-value" id="onlineUsers">0</span>
+                    </div>
+                    <div class="db-stat">
+                        <span class="db-label">New Today</span>
+                        <span class="db-value" id="newToday">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="users-table-card">
+                <h3>Registered Users</h3>
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Full Name</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Akan diisi JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="notifications.js"></script>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
