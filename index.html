@@ -2,18 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlueWhale • Selamat Datang</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>BlueWhale • Secure Authentication</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="landing-page">
-    <!-- Animated Background -->
-    <div class="animated-bg">
-        <div class="gradient-sphere"></div>
-        <div class="gradient-sphere-2"></div>
-    </div>
+<body>
+    <!-- Bubble Container (Pojok Kanan Bawah, kecil) -->
+    <div id="bubbleContainer" class="bubble-container bottom-right"></div>
 
     <!-- Navbar -->
     <nav class="navbar">
@@ -25,16 +22,165 @@
             <div class="nav-links">
                 <a href="#features">Features</a>
                 <a href="#about">About</a>
-                <a href="login.html" class="btn-outline">Login</a>
-                <a href="register.html" class="btn-primary">Register</a>
+                <a href="#demo">Demo</a>
+                <a href="login.html" class="btn-outline-sm">Login</a>
+                <a href="register.html" class="btn-primary-sm">Register</a>
             </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero-section">
         <div class="hero-content">
-            <h1 class="glitch-text" data-text="Welcome to BlueWhale">Welcome to <span>BlueWhale</span></h1>
+            <h1 class="gradient-text">Secure Authentication System</h1>
+            <p class="hero-subtitle">Modern, fast, and secure login & registration system with custom verification and real-time database</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Lightning Fast</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Custom Verification</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-database"></i>
+                    <span>Local Database</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="register.html" class="btn-primary">Get Started <i class="fas fa-arrow-right"></i></a>
+                <a href="#demo" class="btn-outline">Live Demo</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="floating-card">
+                <i class="fas fa-check-circle"></i>
+                <span>2,500+ Users</span>
+            </div>
+            <div class="floating-card card-2">
+                <i class="fas fa-clock"></i>
+                <span>0.5s Response</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <h2 class="section-title">Why Choose <span class="gradient-text">BlueWhale</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon blue">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>Super Fast</h3>
+                <p>Login & register dalam hitungan detik, optimasi loading cepat</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon green">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Custom Verification</h3>
+                <p>Verifikasi slider & math, bukan Cloudflare, punya sendiri</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon purple">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Local Database</h3>
+                <p>Data user tersimpan aman di localStorage, tidak hilang</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon orange">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Bubble Notifications</h3>
+                <p>Notifikasi unik dengan animasi berbeda tiap pesan</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <h2 class="section-title">Live <span class="gradient-text">Demo</span></h2>
+        <div class="demo-container">
+            <div class="demo-card login-demo">
+                <h3><i class="fas fa-sign-in-alt"></i> Login Demo</h3>
+                <div class="demo-preview">
+                    <div class="demo-slider"></div>
+                    <p>Slider verification unik</p>
+                </div>
+                <a href="login.html" class="demo-btn">Try Login →</a>
+            </div>
+            <div class="demo-card register-demo">
+                <h3><i class="fas fa-user-plus"></i> Register Demo</h3>
+                <div class="demo-preview">
+                    <div class="demo-math">5 + 3 = ?</div>
+                    <p>Math verification</p>
+                </div>
+                <a href="register.html" class="demo-btn">Try Register →</a>
+            </div>
+            <div class="demo-card dashboard-demo">
+                <h3><i class="fas fa-chart-line"></i> Dashboard</h3>
+                <div class="demo-preview">
+                    <div class="demo-chart"></div>
+                    <p>Real-time stats</p>
+                </div>
+                <a href="dashboard.html" class="demo-btn">View Demo →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="about-content">
+            <h2>About <span class="gradient-text">BlueWhale</span></h2>
+            <p>BlueWhale adalah sistem autentikasi modern yang dibuat untuk memudahkan developer dalam implementasi login & register. Dengan fitur custom verification, bubble notifications, dan local database, cocok untuk pembelajaran dan prototyping.</p>
+            <div class="tech-stack">
+                <span>HTML5</span>
+                <span>CSS3</span>
+                <span>JavaScript</span>
+                <span>LocalStorage</span>
+            </div>
+        </div>
+        <div class="about-stats">
+            <div class="about-stat">
+                <h3>100%</h3>
+                <p>Client-side</p>
+            </div>
+            <div class="about-stat">
+                <h3>0</h3>
+                <p>Backend needed</p>
+            </div>
+            <div class="about-stat">
+                <h3>30+</h3>
+                <p>Components</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-water"></i>
+                <span>BlueWhale</span>
+            </div>
+            <p>© 2026 BlueWhale Auth System. Created with ❤️ by JejeDev</p>
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+    </html>            <h1 class="glitch-text" data-text="Welcome to BlueWhale">Welcome to <span>BlueWhale</span></h1>
             <p>Modern authentication system with custom verification & bubble notifications</p>
             <div class="hero-buttons">
                 <a href="register.html" class="btn-primary btn-large">Get Started <i class="fas fa-arrow-right"></i></a>
